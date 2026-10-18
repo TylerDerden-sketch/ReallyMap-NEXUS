@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Живая карта неочевидного — Москва</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+  <div class="bg-noise"></div>
+
+  <header class="header">
+    <div class="logo">
+      <span class="logo-orb"></span>
+      <h1>ЖИВАЯ КАРТА <span class="accent">НЕОЧЕВИДНОГО - NEXUS</span></h1>
+    </div>
+    <nav class="nav">
+      <button class="nav-btn active" data-panel="map">Карта</button>
+      <button class="nav-btn" data-panel="list">Точки</button>
+      <button class="nav-btn" data-panel="about">О проекте</button>
+      <button class="nav-btn" data-panel="sights">Достопримечательности</button>
+    </nav>
+  </header>
+
+  <main class="main">
+    <section class="panel active" id="panel-map">
+      <div class="map-wrapper">
+        <div id="map"></div>
+        <div class="map-overlay">
+          <div class="map-hint">Реальная карта Москвы и области · кликните, чтобы отметить место · колесо — зум · перетаскивание — панорама</div>
+        </div>
+        <div class="map-controls">
+          <button id="btnZoomIn" title="Приблизить">+</button>
+          <button id="btnZoomOut" title="Отдалить">−</button>
+          <button id="btnReset" title="Сбросить вид">⟲</button>
+        </div>
+        <div class="map-legend">
+          <span class="legend-item"><i class="dot dot-mystic"></i>Мистика</span>
+          <span class="legend-item"><i class="dot dot-nature"></i>Природа</span>
+          <span class="legend-item"><i class="dot dot-urban"></i>Город</span>
+          <span class="legend-item"><i class="dot dot-history"></i>История</span>
+        </div>
+        <div class="map-coords" id="mapCoords">широта: — | долгота: —</div>
+      </div>
+    </section>
+    <section class="panel" id="panel-sights">
+  <h2>Достопримечательности Москвы и области <span class="count" id="sightsCount">0</span></h2>
+
+  <div class="sights-filters">
+    <button class="filter-chip active" data-filter="all">Все</button>
+    <button class="filter-chip" data-filter="moscow">Москва</button>
+    <button class="filter-chip" data-filter="mo">Московская область</button>
+    <button class="filter-chip" data-filter="kremlin">Кремли</button>
+    <button class="filter-chip" data-filter="church">Храмы</button>
+    <button class="filter-chip" data-filter="estate">Усадьбы</button>
+    <button class="filter-chip" data-filter="nature">Природа</button>
+    <button class="filter-chip" data-filter="museum">Музеи</button>
+    <button class="filter-chip" data-filter="tech">Техника</button>
+  </div>
+
+  <div class="sights-search">
+    <input type="text" id="sightsSearch" placeholder="Поиск по названию, городу или описанию..." />
+  </div>
+
+  <div class="sights-list" id="sightsList"></div>
+</section>
+
+    <section class="panel" id="panel-list">
+      <h2>Отмеченные точки <span class="count" id="pointsCount">0</span></h2>
+      <div class="points-list" id="pointsList"></div>
+    </section>
+
+    <section class="panel" id="panel-about">
+      <h2>О проекте</h2>
+      <p class="about-text">
+        «Живая карта неочевидного» — интерактивное пространство, где каждый может
+        отметить места, о которых не пишут в путеводителях: странные артефакты,
+        забытые уголки, городские легенды. Карта построена на реальных данных
+        OpenStreetMap: видна каждая улица, каждый дом.
+      </p>
+      <ul class="about-list">
+        <li>Реальная карта Москвы и Московской области (OSM)</li>
+        <li>Кликните по карте — отметьте неочевидное место</li>
+        <li>Выбирайте категорию и описывайте точку</li>
+        <li>Данные сохраняются в вашем браузере (localStorage)</li>
+        <li>Зум до отдельного дома, панорама перетаскиванием</li>
+      </ul>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal">
+      <h3>Новая точка</h3>
+      <form id="pointForm">
+        <label>
+          Название
+          <input type="text" id="pointName" maxlength="60" required placeholder="Например, Стена с лицами" />
+        </label>
+        <label>
+          Категория
+          <select id="pointCategory">
+            <option value="mystic">Мистика</option>
+            <option value="nature">Природа</option>
+            <option value="urban">Город</option>
+            <option value="history">История</option>
+          </select>
+        </label>
+        <label>
+          Описание
+          <textarea id="pointDesc" maxlength="300" rows="3" placeholder="Что тут неочевидного?"></textarea>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="cancelBtn">Отмена</button>
+          <button type="submit" class="btn-primary">Добавить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
